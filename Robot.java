@@ -114,7 +114,7 @@ public class Robot extends TimedRobot {
       break;
     case kDefaultAuto:
     default:
-      // Put default auto code here
+          
       break;
     }
   }
@@ -141,6 +141,7 @@ public class Robot extends TimedRobot {
     {
       leadMotorRight.set(0); 
     }
+
     if(leftJoy.getY() < -0.1 || leftJoy.getY() > 0.1)
     {
       leadMotorLeft.set(-leftJoy.getY());
@@ -172,14 +173,16 @@ public class Robot extends TimedRobot {
       }
     } 
     */
-    //H Intake && James is stupid and gaee
+    //H & V Intake && James is stupid and gaee
     if(xbox.getAButton()) 
     {
       hIntake.set(0.5);
+      vIntake.set(1);
     } 
     else if (xbox.getBButton())
     {
       hIntake.set(-0.5);
+      vIntake.set(-1);
     }
     else
     {
@@ -189,33 +192,28 @@ public class Robot extends TimedRobot {
     //Shooter
     if (xbox.getRawButtonPressed(5)) 
     {
-      shooter1.set(.85);
-      shooter2.set(.85);
+      shooter1.set(-1.0);
+      shooter2.set(-1.0);
     } 
     else if (xbox.getRawButtonPressed(6))
     {
       shooter1.set(0.0);
       shooter2.set(0.0);
     }
-    else
-    {
 
+    //Hopper
+    if(xbox.getXButton())
+    {
+      hopper.set(0.5);
     }
-
-    //VIntake
-    if(xbox.getBackButton()) 
+    else if (xbox.getYButton())
     {
-      vIntake.set(0.5);
-    } 
-    else if (xbox.getStartButton())
-    {
-      vIntake.set(-0.5);
+      hopper.set(-0.5);
     }
     else
     {
-      vIntake.set(0.0);
+      hopper.set(0);
     }
-
   }
 
   /**

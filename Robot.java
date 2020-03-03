@@ -172,8 +172,8 @@ public class Robot extends TimedRobot {
     //Shooter
     if (xbox.getRawButtonPressed(5)) 
     {
-      shooter1.set(.85);
-      shooter2.set(.85);
+      shooter1.set(1);
+      shooter2.set(1);
     } 
     else if (xbox.getRawButtonPressed(6))
     {
@@ -182,17 +182,18 @@ public class Robot extends TimedRobot {
     }
     else
     {
-
+      shooter1.set(0.0);
+      shooter2.set(0.0);
     }
 
     //VIntake
     if(xbox.getBackButton()) 
     {
-      vIntake.set(0.5);
+      vIntake.set(1);
     } 
     else if (xbox.getStartButton())
     {
-      vIntake.set(-0.5);
+      vIntake.set(-1);
     }
     else
     {

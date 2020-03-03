@@ -34,10 +34,10 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  CANSparkMax leadMotorRight = new CANSparkMax(1, MotorType.kBrushless);
+  CANSparkMax leadMotorRight = new CANSparkMax(3, MotorType.kBrushless);
   CANEncoder leadRightEncoder = new CANEncoder(leadMotorRight);
-  CANSparkMax followMotorRight = new CANSparkMax(3, MotorType.kBrushless);
-  CANSparkMax leadMotorLeft = new CANSparkMax(4, MotorType.kBrushless);
+  CANSparkMax followMotorRight = new CANSparkMax(4, MotorType.kBrushless);
+  CANSparkMax leadMotorLeft = new CANSparkMax(1, MotorType.kBrushless);
   CANEncoder leadLeftEncoder = new CANEncoder(leadMotorLeft);
   CANSparkMax followMotorLeft = new CANSparkMax(2, MotorType.kBrushless);
 
@@ -47,8 +47,9 @@ public class Robot extends TimedRobot {
   CANSparkMax vIntake = new CANSparkMax(9, MotorType.kBrushed);
   CANSparkMax hopper = new CANSparkMax(7, MotorType.kBrushed);
 
-  Joystick Joy = new Joystick(0);
-  XboxController xbox = new XboxController(1);
+  Joystick leftJoy = new Joystick(0);
+  Joystick rightJoy = new Joystick(1);
+  XboxController xbox = new XboxController(2);
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -132,10 +133,26 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     
     //Drive
-    leadMotorRight.set(Joy.getY());
-    leadMotorLeft.set(Joy.getY());
+    if(rightJoy.getY() < -0.1 || rightJoy.getY() > 0.1)
+    {
+      leadMotorRight.set(rightJoy.getY());
+    }
+    else
+    {
+      leadMotorRight.set(0); 
+    }
+    if(leftJoy.getY() < -0.1 || leftJoy.getY() > 0.1)
+    {
+      leadMotorLeft.set(-leftJoy.getY());
+    }
+    else
+    {
+      leadMotorLeft.set(0);
+    }
+    
 
     //Encoder Test
+    /*
     if(xbox.getRawButtonPressed(3)) {
       double leadLeftOutput1 = leadLeftEncoder.getPosition();
       
@@ -154,7 +171,7 @@ public class Robot extends TimedRobot {
         leadMotorRight.set(-0.5);
       }
     } 
-
+    */
     //H Intake && James is stupid and gaee
     if(xbox.getAButton()) 
     {

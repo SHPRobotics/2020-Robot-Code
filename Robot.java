@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import javax.lang.model.util.ElementScanner6;
+
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -19,6 +21,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+
 
 
 /**
@@ -34,10 +38,10 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  CANSparkMax leadMotorRight = new CANSparkMax(1, MotorType.kBrushless);
+  CANSparkMax leadMotorRight = new CANSparkMax(3, MotorType.kBrushless);
   CANEncoder leadRightEncoder = new CANEncoder(leadMotorRight);
-  CANSparkMax followMotorRight = new CANSparkMax(3, MotorType.kBrushless);
-  CANSparkMax leadMotorLeft = new CANSparkMax(4, MotorType.kBrushless);
+  CANSparkMax followMotorRight = new CANSparkMax(4, MotorType.kBrushless);
+  CANSparkMax leadMotorLeft = new CANSparkMax(1, MotorType.kBrushless);
   CANEncoder leadLeftEncoder = new CANEncoder(leadMotorLeft);
   CANSparkMax followMotorLeft = new CANSparkMax(2, MotorType.kBrushless);
 
@@ -46,9 +50,14 @@ public class Robot extends TimedRobot {
   CANSparkMax hIntake = new CANSparkMax(8, MotorType.kBrushed);
   CANSparkMax vIntake = new CANSparkMax(9, MotorType.kBrushed);
   CANSparkMax hopper = new CANSparkMax(7, MotorType.kBrushed);
+  CANEncoder hopperEncoder = new CANEncoder(hopper);
 
-  Joystick Joy = new Joystick(0);
-  XboxController xbox = new XboxController(1);
+  Joystick leftJoy = new Joystick(0);
+  Joystick rightJoy = new Joystick(1);
+  XboxController xbox = new XboxController(2);
+
+  /*Drive talonDrive = new Drive(leftJoy, rightJoy, leadMotorLeft, leadMotorRight);
+  Limelight vision = new Limelight(diffTalonDrive, rightJoy);*/
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -100,8 +109,18 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
-  }
 
+    /*public static forward (distance)
+    {
+      double leadRightOutput1 = leadRightEncoder.getPosition();
+
+      while(leadRightEncoder.getPosition() > -distance + leadRightOutput1) {
+        leadMotorLeft.set(-0.5);
+        leadMotorRight.set(-0.5);
+      }
+    } */
+  }
+ 
   /**
    * This function is called periodically during autonomous.
    */
@@ -113,7 +132,7 @@ public class Robot extends TimedRobot {
       break;
     case kDefaultAuto:
     default:
-      // Put default auto code here
+          
       break;
     }
   }
@@ -132,75 +151,119 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     
     //Drive
-    leadMotorRight.set(Joy.getY());
-    leadMotorLeft.set(Joy.getY());
+    if(rightJoy.getY() < -0.1 || rightJoy.getY() > 0.1)
+    {
+      leadMotorRight.set(rightJoy.getY());
+    }
+    else
+    {
+      leadMotorRight.set(0); 
+    }
 
+    if(leftJoy.getY() < -0.1 || leftJoy.getY() > 0.1)
+    {
+      leadMotorLeft.set(-leftJoy.getY());
+    }
+    else
+    {
+      leadMotorLeft.set(0);
+    }
+    
+    /*
     //Encoder Test
-    if(xbox.getRawButtonPressed(3)) {
+    
+    if(xbox.getRawButtonPressed(7)) {
       double leadLeftOutput1 = leadLeftEncoder.getPosition();
       
-      while(leadLeftEncoder.getPosition() < 0.5 + leadLeftOutput1) {
+      while(leadLeftEncoder.getPosition() < 10 + leadLeftOutput1) {
         leadMotorLeft.set(0.5);
         leadMotorRight.set(0.5);
       }
     } 
     
-    if (xbox.getRawButtonPressed(4)) 
+    if (xbox.getRawButtonPressed(8)) 
     {
       double leadRightOutput1 = leadRightEncoder.getPosition();
 
-      while(leadRightEncoder.getPosition() > -0.5 + leadRightOutput1) {
+      while(leadRightEncoder.getPosition() > -10 + leadRightOutput1) {
         leadMotorLeft.set(-0.5);
         leadMotorRight.set(-0.5);
       }
     } 
-
-    //H Intake && James is stupid and gaee
+    */
+    //H & V Intake && James is stupid and gaee
     if(xbox.getAButton()) 
     {
-      hIntake.set(0.5);
+      hIntake.set(-0.5);
+      vIntake.set(1);
     } 
     else if (xbox.getBButton())
     {
-      hIntake.set(-0.5);
+      hIntake.set(0.5);
+      vIntake.set(-1);
     }
     else
     {
       hIntake.set(0.0);
+      vIntake.set(0.0);
     }
 
     //Shooter
+    
     if (xbox.getRawButtonPressed(5)) 
     {
-      shooter1.set(1);
-      shooter2.set(1);
+      shooter1.set(-1.0);
+      shooter2.set(-1.0);
     } 
     else if (xbox.getRawButtonPressed(6))
     {
       shooter1.set(0.0);
       shooter2.set(0.0);
     }
-    else
+    
+    //Hopper aka Circle Button
+    if(xbox.getYButton())
     {
-      shooter1.set(0.0);
-      shooter2.set(0.0);
+      hopper.set(-0.5);
     }
-
-    //VIntake
-    if(xbox.getBackButton()) 
+    else if (xbox.getXButton())
     {
-      vIntake.set(1);
-    } 
-    else if (xbox.getStartButton())
-    {
-      vIntake.set(-1);
+      hopper.set(0.5);
     }
     else
     {
-      vIntake.set(0.0);
+      hopper.set(0.0);
     }
-
+    /*
+    if(xbox.getRawButtonPressed(3)) 
+    {
+      for(int i = 0; i < 4; i++)
+      {
+        double startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < 1) 
+        {
+          hopper.set(0.5);
+        }
+      }
+    }
+    else if (xbox.getRawButtonPressed(4))
+    {
+      for(int i = 0; i < 4; i++)
+      {
+        double startTime = System.currentTimeMillis();
+        
+        while (System.currentTimeMillis() - startTime < 1) 
+        {
+          hopper.set(-0.5);
+        }
+      }
+    }
+    else 
+    {
+      hopper.set(0);
+    }*/
   }
+
 
   /**
    * This function is called once when the robot is disabled.

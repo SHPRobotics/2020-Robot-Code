@@ -51,6 +51,7 @@ public class Robot extends TimedRobot {
   Joystick rightJoy = new Joystick(1);
   XboxController xbox = new XboxController(2);
 
+  Limelight vision = new Limelight();
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
@@ -65,6 +66,11 @@ public class Robot extends TimedRobot {
     followMotorRight.restoreFactoryDefaults();
     leadMotorLeft.restoreFactoryDefaults();
     followMotorLeft.restoreFactoryDefaults();
+    shooter1.restoreFactoryDefaults();
+    shooter2.restoreFactoryDefaults();
+    hIntake.restoreFactoryDefaults();
+    vIntake.restoreFactoryDefaults();
+    hopper.restoreFactoryDefaults();
 
     followMotorRight.follow(leadMotorRight);
     followMotorLeft.follow(leadMotorLeft);
@@ -166,53 +172,72 @@ public class Robot extends TimedRobot {
     if (xbox.getRawButtonPressed(4)) 
     {
       double leadRightOutput1 = leadRightEncoder.getPosition();
-
       while(leadRightEncoder.getPosition() > -0.5 + leadRightOutput1) {
         leadMotorLeft.set(-0.5);
         leadMotorRight.set(-0.5);
       }
     } 
     */
-    //H & V Intake && James is stupid and gaee
+    //H & V Intake && James is stupid and gaee && Square button is intake && X button is out
     if(xbox.getAButton()) 
     {
-      hIntake.set(0.5);
-      vIntake.set(1);
+      hIntake.set(-1);
+      vIntake.set(0.6);
     } 
     else if (xbox.getBButton())
     {
-      hIntake.set(-0.5);
-      vIntake.set(-1);
+      hIntake.set(1);
+      vIntake.set(-.6);
     }
     else
     {
       hIntake.set(0.0);
+      vIntake.set(0.0);
     }
 
     //Shooter
-    if (xbox.getRawButtonPressed(5)) 
+    if (xbox.getRawButtonPressed(6)) 
     {
       shooter1.set(-1.0);
       shooter2.set(-1.0);
     } 
-    else if (xbox.getRawButtonPressed(6))
+    else if (xbox.getRawButtonPressed(5))
     {
       shooter1.set(0.0);
       shooter2.set(0.0);
     }
 
     //Hopper
-    if(xbox.getXButton())
+    if(xbox.getRawButtonPressed(3))
     {
-      hopper.set(0.5);
+      double startTime = System.currentTimeMillis(); 
+      
+      while (System.currentTimeMillis() - startTime < 100)
+      {       
+        {
+          hopper.set(0.5);
+        }
+      }
     }
-    else if (xbox.getYButton())
+    else if (xbox.getRawButtonPressed(4))
     {
-      hopper.set(-0.5);
+      double startTime = System.currentTimeMillis(); 
+      
+      while (System.currentTimeMillis() - startTime < 100)
+      {       
+        {
+          hopper.set(-0.5);
+        }
+      }
     }
     else
     {
-      hopper.set(0);
+      hopper.set(0.0);
+    }
+
+    if(rightJoy.getRawButton(3))
+    {
+      vision.toggle();
     }
   }
 

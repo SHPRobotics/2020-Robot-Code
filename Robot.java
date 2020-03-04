@@ -194,7 +194,8 @@ public class Robot extends TimedRobot {
     hopper.rotate();
     drive.move();
     vision.checkTarget();
-    vision.aim();
+    //vision.aim();
+    vision.toggle();
   }
 
 

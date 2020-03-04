@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,6 +16,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 public class Limelight {
 
     NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    private static NetworkTableInstance table2 = null;
 
     double v = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tv").getDouble(0);
     double x = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
@@ -106,5 +108,21 @@ public class Limelight {
           rightMotor.set(0);
           leftMotor.set(0);
         }
+    }
+
+    public void toggle ()
+    {
+      if(rightJoy.getRawButton(3))
+      {
+        getValue("camMode").setNumber(1);
+      }
+    }
+
+    private static NetworkTableEntry getValue(String key) {
+      if (table2 == null) {
+        table2 = NetworkTableInstance.getDefault();
+      }
+  
+      return table2.getTable("limelight").getEntry(key);
     }
 }

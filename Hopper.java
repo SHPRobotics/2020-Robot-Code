@@ -31,7 +31,7 @@ public class Hopper {
           {
             double startTime = System.currentTimeMillis(); 
     
-            while (System.currentTimeMillis() - startTime == 1)
+            while (System.currentTimeMillis() - startTime < 1)
             {
               double motorPos = encoder.getPosition();
               
@@ -52,7 +52,7 @@ public class Hopper {
           {
             double startTime = System.currentTimeMillis(); 
     
-            while (System.currentTimeMillis() - startTime == 1)
+            while (System.currentTimeMillis() - startTime < 1)
             {
               double motorPos = encoder.getPosition();
               

@@ -11,19 +11,15 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import javax.lang.model.util.ElementScanner6;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
-
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.GenericHID;
-
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -49,22 +45,13 @@ public class Robot extends TimedRobot {
   CANSparkMax shooter2 = new CANSparkMax(6, MotorType.kBrushed);
   CANSparkMax hIntake = new CANSparkMax(8, MotorType.kBrushed);
   CANSparkMax vIntake = new CANSparkMax(9, MotorType.kBrushed);
-  CANSparkMax hopperMotor = new CANSparkMax(7, MotorType.kBrushed);
-  CANEncoder hopperEncoder = new CANEncoder(hopperMotor);
+  CANSparkMax hopper = new CANSparkMax(7, MotorType.kBrushed);
 
   Joystick leftJoy = new Joystick(0);
   Joystick rightJoy = new Joystick(1);
   XboxController xbox = new XboxController(2);
 
-  SpeedControllerGroup leftSide = new SpeedControllerGroup(followMotorLeft, leadMotorLeft);
-  SpeedControllerGroup rightSide = new SpeedControllerGroup(followMotorRight, leadMotorRight);
-  DifferentialDrive diffDrive = new DifferentialDrive(leftSide, rightSide);
-
-  Hopper hopper = new Hopper(xbox, hopperMotor, hopperEncoder);
-  Drive drive = new Drive (leftJoy, rightJoy, leadMotorRight, leadMotorLeft, leadRightEncoder, leadLeftEncoder);
-
-  Limelight vision = new Limelight(diffDrive, rightJoy);
-
+  Limelight vision = new Limelight();
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
@@ -79,6 +66,11 @@ public class Robot extends TimedRobot {
     followMotorRight.restoreFactoryDefaults();
     leadMotorLeft.restoreFactoryDefaults();
     followMotorLeft.restoreFactoryDefaults();
+    shooter1.restoreFactoryDefaults();
+    shooter2.restoreFactoryDefaults();
+    hIntake.restoreFactoryDefaults();
+    vIntake.restoreFactoryDefaults();
+    hopper.restoreFactoryDefaults();
 
     followMotorRight.follow(leadMotorRight);
     followMotorLeft.follow(leadMotorLeft);
@@ -116,7 +108,7 @@ public class Robot extends TimedRobot {
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
   }
- 
+
   /**
    * This function is called periodically during autonomous.
    */
@@ -145,17 +137,57 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
- 
-    //H & V Intake && James is stupid and gaee
+    
+    //Drive
+    if(rightJoy.getY() < -0.2 || rightJoy.getY() > 0.2)
+    {
+      leadMotorRight.set(rightJoy.getY() * rightJoy.getY() * rightJoy.getY());
+    }
+    else
+    {
+      leadMotorRight.set(0); 
+    }
+
+    if(leftJoy.getY() < -0.2 || leftJoy.getY() > 0.2)
+    {
+      leadMotorLeft.set(-leftJoy.getY() * leftJoy.getY() * leftJoy.getY());
+    }
+    else
+    {
+      leadMotorLeft.set(0);
+    }
+    
+
+    //Encoder Test
+    /*
+    if(xbox.getRawButtonPressed(3)) {
+      double leadLeftOutput1 = leadLeftEncoder.getPosition();
+      
+      while(leadLeftEncoder.getPosition() < 0.5 + leadLeftOutput1) {
+        leadMotorLeft.set(0.5);
+        leadMotorRight.set(0.5);
+      }
+    } 
+    
+    if (xbox.getRawButtonPressed(4)) 
+    {
+      double leadRightOutput1 = leadRightEncoder.getPosition();
+      while(leadRightEncoder.getPosition() > -0.5 + leadRightOutput1) {
+        leadMotorLeft.set(-0.5);
+        leadMotorRight.set(-0.5);
+      }
+    } 
+    */
+    //H & V Intake && James is stupid and gaee && Square button is intake && X button is out
     if(xbox.getAButton()) 
     {
-      hIntake.set(-0.5);
-      vIntake.set(1);
+      hIntake.set(-1);
+      vIntake.set(0.6);
     } 
     else if (xbox.getBButton())
     {
-      hIntake.set(0.5);
-      vIntake.set(-1);
+      hIntake.set(1);
+      vIntake.set(-.6);
     }
     else
     {
@@ -164,40 +196,71 @@ public class Robot extends TimedRobot {
     }
 
     //Shooter
-    if (xbox.getRawButtonPressed(5)) 
+    if (xbox.getRawButtonPressed(6)) 
     {
       shooter1.set(-1.0);
       shooter2.set(-1.0);
     } 
-    else if (xbox.getRawButtonPressed(6))
+    else if (xbox.getRawButtonPressed(5))
     {
       shooter1.set(0.0);
       shooter2.set(0.0);
     }
     
-    //hopperMotorMotor aka Circle Button
-    /*
-    if(xbox.getYButton())
+    if(xbox.getRawButtonPressed(7))
     {
-      hopperMotor.set(-0.5);
+      shooter1.set(1.0);
+      shooter2.set(1.0);
+
+      for(int i=0; i < 4; i++)
+      {
+        double startT = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - startT < 2)
+        {
+          double startT2 = System.currentTimeMillis();
+
+          while (System.currentTimeMillis() - startT2 < 0.1)
+          {
+            hopper.set(0.5);
+          }
+
+          hopper.set(0.0);
+        }
+      }
     }
-    else if (xbox.getXButton())
+
+    //Hopper
+    if(xbox.getRawButtonPressed(3))
     {
-      hopperMotor.set(0.5);
+      double startTime = System.currentTimeMillis(); 
+      
+      while (System.currentTimeMillis() - startTime < 150)
+      {       
+        hopper.set(0.3);
+      }
+    }
+    else if (xbox.getRawButtonPressed(4))
+    {
+      double startTime = System.currentTimeMillis(); 
+      
+      while (System.currentTimeMillis() - startTime < 150)
+      {       
+        hopper.set(-0.3);
+      }
     }
     else
     {
-      hopperMotor.set(0.0);
+      hopper.set(0.0);
     }
-    */
-    
-    hopper.rotate();
-    drive.move();
-    vision.checkTarget();
-    //vision.aim();
-    vision.toggle();
-  }
 
+
+
+    if(rightJoy.getRawButton(3))
+    {
+      vision.toggle();
+    }
+  }
 
   /**
    * This function is called once when the robot is disabled.

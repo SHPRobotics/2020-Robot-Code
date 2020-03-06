@@ -10,6 +10,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.networktables.*;
+import edu.wpi.first.networktables.NetworkTable;
+
 
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import com.revrobotics.CANEncoder;
@@ -112,17 +115,26 @@ public class Robot extends TimedRobot {
     System.out.println("Auto selected: " + m_autoSelected);
   }
 
-  public void forward (float distance)
+  public void GRRAA ()
   {
-    double leadLeftOutput1 = leadLeftEncoder.getPosition();
-    
-    while(leadLeftEncoder.getPosition() < distance + leadLeftOutput1) 
+    shooter1.set(1.0);
+    shooter2.set(1.0);
+
+    for(int i=0; i < 4; i++)
     {
-      leadMotorLeft.set(0.5);
-      leadMotorRight.set(0.5);
+      double startT = System.currentTimeMillis();
+
+      while (System.currentTimeMillis() - startT < 700)
+      {
+        double startT2 = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - startT2 < 150)
+        {
+          hopper.set(-0.3);
+        } 
+      }
     }
   }
-
   /**
    * This function is called periodically during autonomous.
    */
@@ -130,10 +142,24 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     switch (m_autoSelected) {
     case kCustomAuto:
-      // Put custom auto code here
-      forward(10);   
+      // Put custom auto code here   
       break;
     case kDefaultAuto:
+      Timer time = new Timer();
+
+      time.reset();
+      time.start();
+
+      if(time.get() <= 2)
+      {
+        leadMotorLeft.set(0.5);
+        leadMotorRight.set(-0.5);
+      }
+      else
+      {
+        leadMotorLeft.set(0);
+        leadMotorRight.set(0);
+      }
     default:      
       break;
     }
@@ -153,18 +179,18 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     
     //Drive
-    if(rightJoy.getY() < -0.1 || rightJoy.getY() > 0.1)
+    if(rightJoy.getY() < -0.15 || rightJoy.getY() > 0.15)
     {
-      leadMotorRight.set(rightJoy.getY() * rightJoy.getY() * rightJoy.getY());
+      leadMotorRight.set(0.75 * rightJoy.getY());
     }
     else
     {
       leadMotorRight.set(0); 
     }
 
-    if(leftJoy.getY() < -0.1 || leftJoy.getY() > 0.1)
+    if(leftJoy.getY() < -0.15 || leftJoy.getY() > 0.15)
     {
-      leadMotorLeft.set(-leftJoy.getY() * leftJoy.getY() * leftJoy.getY());
+      leadMotorLeft.set(-0.75 * leftJoy.getY());
     }
     else
     {
@@ -191,8 +217,8 @@ public class Robot extends TimedRobot {
     //Shooter
     if (xbox.getRawButtonPressed(6)) 
     {
-      shooter1.set(-1.0);
-      shooter2.set(-1.0);
+      shooter1.set(-0.8);
+      shooter2.set(-0.8);
     } 
     else if (xbox.getRawButtonPressed(5))
     {
@@ -202,26 +228,7 @@ public class Robot extends TimedRobot {
 
     if(xbox.getRawButtonPressed(7))
     {
-      shooter1.set(1.0);
-      shooter2.set(1.0);
-
-      for(int i=0; i < 4; i++)
-      {
-        double startT = System.currentTimeMillis();
-
-        while (System.currentTimeMillis() - startT < 300)
-        {
-          double startT2 = System.currentTimeMillis();
-
-          while (System.currentTimeMillis() - startT2 < 150)
-          {
-            hopper.set(-0.3);
-          }
-
-          hopper.set(0.0);
-          
-        }
-      }
+      GRRAA();
     }
     //Hopper
     if(xbox.getRawButtonPressed(3)) //circle

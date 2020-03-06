@@ -8,6 +8,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.*;
@@ -15,6 +16,7 @@ import edu.wpi.first.networktables.NetworkTable;
 
 
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -117,23 +119,46 @@ public class Robot extends TimedRobot {
 
   public void GRRAA ()
   {
-    shooter1.set(1.0);
-    shooter2.set(1.0);
-
-    for(int i=0; i < 4; i++)
+    Timer watch = new Timer();
+    
+    watch.reset();
+    watch.start();
+    
+    if (0.0 < watch.get() && watch.get() <= 1)
     {
-      double startT = System.currentTimeMillis();
-
-      while (System.currentTimeMillis() - startT < 700)
-      {
-        double startT2 = System.currentTimeMillis();
-
-        while (System.currentTimeMillis() - startT2 < 150)
-        {
-          hopper.set(-0.3);
-        } 
-      }
+      shooter1.set(1.0);
+      shooter2.set(1.0);
     }
+    else if (1.0 < watch.get() && watch.get() <= 1.3)
+    {
+      hopper.set(-0.3);
+    }
+    else if (1.3 < watch.get() && watch.get() <= 1.5)
+    {
+      hopper.set(0);
+    }
+    else if (1.5 < watch.get() && watch.get() <= 1.8)
+    {
+      hopper.set(-0.3);
+    }
+    else if (1.8 < watch.get() && watch.get() <= 2.0)
+    {
+      hopper.set(0);
+    }
+    else if (2.0 < watch.get() && watch.get() <= 2.3)
+    {
+      hopper.set(-0.3);
+    }
+    else if (2.3 < watch.get() && watch.get() <= 2.5)
+    {
+      hopper.set(0);
+    }
+    else if (3 < watch.get())
+    {
+      shooter1.set(0);
+      shooter2.set(0);
+    }
+
   }
   /**
    * This function is called periodically during autonomous.
@@ -240,7 +265,7 @@ public class Robot extends TimedRobot {
           hopper.set(0.3);
       }
     }
-    else if (xbox.getRawButtonPressed(4)) //triangle
+    else if (xbox.getRawButtonPressed(4)) //triangle & hopout
     {
       double startTime = System.currentTimeMillis(); 
       

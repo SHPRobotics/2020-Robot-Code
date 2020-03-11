@@ -105,7 +105,7 @@ public class Robot extends TimedRobot {
       {
         hopper.set(-0.3);
       }
-      else if (150 < System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 200)
+      else if (100 < System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 200)
       {
         hopper.set(0);
       }

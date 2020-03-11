@@ -13,8 +13,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.networktables.NetworkTable;
 
-
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -82,6 +82,105 @@ public class Robot extends TimedRobot {
     followMotorLeft.follow(leadMotorLeft);
   }
 
+  public void GRRAA ()
+  {
+    double watch = System.currentTimeMillis();
+    
+    while (System.currentTimeMillis() - watch <= 1000)
+    {
+      if (xbox.getBackButton())
+      {
+        vIntake.set(1);
+      }
+      else if (xbox.getXButton())
+      {
+        vIntake.set(-1);
+      }
+      else
+      {
+        vIntake.set(0);
+      }
+
+      if (System.currentTimeMillis() - watch <= 150)
+      {
+        hopper.set(-0.3);
+      }
+      else if (150 < System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 1000)
+      {
+        hopper.set(0);
+      }
+    }
+  }
+
+  public void forward (int distance)
+  {
+    double leadLeftOutput1 = leadLeftEncoder.getPosition();
+    
+    while(leadLeftEncoder.getPosition() < distance + leadLeftOutput1) 
+    {
+      leadMotorLeft.set(0.2);
+      leadMotorRight.set(-0.2);
+    }
+    leadMotorLeft.set(0.0);
+    leadMotorRight.set(0.0);
+  }
+
+  public void DOTDOOTDOOT ()
+  {
+    double watch = System.currentTimeMillis();
+    
+    while (System.currentTimeMillis() - watch <= 9000) 
+    {
+
+      if (System.currentTimeMillis() - watch <= 2000)
+      {
+        shooter1.set(-0.6);
+        shooter2.set(-0.6);
+      }
+      else if (2000 <= System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 8000)
+      {
+        GRRAA();
+      }
+      else if (8000 <= System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 9000)
+      {
+        shooter1.set(0);
+        shooter2.set(0);
+      }
+    }
+  }
+
+  public void IntakeDOOTDOOT ()
+  {
+    double watch = System.currentTimeMillis();
+    
+    while (System.currentTimeMillis() - watch <= 8000) 
+    {
+      if (xbox.getBackButton())
+      {
+        vIntake.set(1);
+      }
+      else if (xbox.getXButton())
+      {
+        vIntake.set(-1);
+      }
+      else
+      {
+        vIntake.set(0);
+      }
+
+      if (System.currentTimeMillis() - watch <= 2000)
+      {
+        shooter1.set(-0.4);
+        shooter2.set(-0.4);
+        
+      }
+      else if (2000 <= System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 8000)
+      {
+        GRRAA();
+      }
+    }
+  }
+
   /**
    * This function is called every robot packet, no matter the mode. Use this for
    * items like diagnostics that you want ran during disabled, autonomous,
@@ -113,28 +212,11 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+
+    DOTDOOTDOOT();
+    forward(10);
   }
 
-  public void GRRAA ()
-  {
-    shooter1.set(1.0);
-    shooter2.set(1.0);
-
-    for(int i=0; i < 4; i++)
-    {
-      double startT = System.currentTimeMillis();
-
-      while (System.currentTimeMillis() - startT < 700)
-      {
-        double startT2 = System.currentTimeMillis();
-
-        while (System.currentTimeMillis() - startT2 < 150)
-        {
-          hopper.set(-0.3);
-        } 
-      }
-    }
-  }
   /**
    * This function is called periodically during autonomous.
    */
@@ -145,16 +227,6 @@ public class Robot extends TimedRobot {
       // Put custom auto code here   
       break;
     case kDefaultAuto:
-      double startTime = System.currentTimeMillis(); 
-      
-      while (System.currentTimeMillis() - startTime < 150)
-      {       
-        leadMotorLeft.set(0.2);
-        leadMotorRight.set(-0.2);
-      }
-
-      leadMotorLeft.set(0.0);
-      leadMotorRight.set(0.0);
     default:      
       break;
     }
@@ -193,49 +265,27 @@ public class Robot extends TimedRobot {
     }
     
     //H & V Intake && James is stupid and gaee && Square button is intake && X button is out
-    if(xbox.getAButton()) 
+    if(xbox.getAButton()) //intake & hop in
     {
-      hIntake.set(-1);
-      vIntake.set(0.6);
-    } 
-    else if (xbox.getBButton())
-    {
-      hIntake.set(1);
-      vIntake.set(-.6);
+      hIntake.set(-0.6);
+      vIntake.set(1);
+      hopper.set(0.1);
     }
-    else
+    else if (xbox.getBButton()) //intake out
     {
-      hIntake.set(0.0);
-      vIntake.set(0.0);
+      hIntake.set(0.6);
+      vIntake.set(-1);
     }
-
-    //Shooter
-    if (xbox.getRawButtonPressed(6)) 
-    {
-      shooter1.set(-0.8);
-      shooter2.set(-0.8);
-    } 
-    else if (xbox.getRawButtonPressed(5))
-    {
-      shooter1.set(0.0);
-      shooter2.set(0.0);
-    }
-
-    if(xbox.getRawButtonPressed(7))
-    {
-      GRRAA();
-    }
-    //Hopper
-    if(xbox.getRawButtonPressed(3)) //circle
+    /*else if (xbox.getRawButtonPressed(3)) //squre and hopin
     {
       double startTime = System.currentTimeMillis(); 
-      
+   
       while (System.currentTimeMillis() - startTime < 150)
       {       
-          hopper.set(0.3);
+        hopper.set(0.3);
       }
-    }
-    else if (xbox.getRawButtonPressed(4)) //triangle
+    }*/
+    else if (xbox.getRawButtonPressed(4)) //triangle & hopout
     {
       double startTime = System.currentTimeMillis(); 
       
@@ -244,11 +294,28 @@ public class Robot extends TimedRobot {
         hopper.set(-0.3);
       }
     }
+    else if (xbox.getRawButton(8))
+    {
+      IntakeDOOTDOOT();
+    }
     else
     {
-      hopper.set(0.0);
+      hIntake.set(0.0);
+      vIntake.set(0.0);
+      hopper.set(0);
     }
 
+    //shooter
+    if (xbox.getRawButtonPressed(6)) 
+    {
+      shooter1.set(-0.8);
+      shooter2.set(-0.8);
+    }
+    else if (xbox.getRawButtonPressed(5))
+    {
+      shooter1.set(0.0);
+      shooter2.set(0.0);
+    }
     //vision.checkTarget();
     vision.setCamera(1);
   }

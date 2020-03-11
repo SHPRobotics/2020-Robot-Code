@@ -86,7 +86,7 @@ public class Robot extends TimedRobot {
   {
     double watch = System.currentTimeMillis();
     
-    while (System.currentTimeMillis() - watch <= 1000)
+    while (System.currentTimeMillis() - watch <= 200)
     {
       if (xbox.getBackButton())
       {
@@ -101,11 +101,11 @@ public class Robot extends TimedRobot {
         vIntake.set(0);
       }
 
-      if (System.currentTimeMillis() - watch <= 150)
+      if (System.currentTimeMillis() - watch <= 100)
       {
         hopper.set(-0.3);
       }
-      else if (150 < System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 1000)
+      else if (150 < System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 200)
       {
         hopper.set(0);
       }
@@ -153,7 +153,7 @@ public class Robot extends TimedRobot {
   {
     double watch = System.currentTimeMillis();
     
-    while (System.currentTimeMillis() - watch <= 8000) 
+    while (System.currentTimeMillis() - watch <= 7000) 
     {
       if (xbox.getBackButton())
       {
@@ -170,11 +170,11 @@ public class Robot extends TimedRobot {
 
       if (System.currentTimeMillis() - watch <= 2000)
       {
-        shooter1.set(-0.4);
-        shooter2.set(-0.4);
+        shooter1.set(-0.8);
+        shooter2.set(-0.8);
         
       }
-      else if (2000 <= System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 8000)
+      else if (2000 <= System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 7000)
       {
         GRRAA();
       }

@@ -264,7 +264,7 @@ public class Robot extends TimedRobot {
       leadMotorLeft.set(0);
     }
     
-    //H & V Intake && James is stupid and gaee && Square button is intake && X button is out
+    //H & V Intake && James is stupid && Square button is intake && X button is out
     if(xbox.getAButton()) //intake & hop in
     {
       hIntake.set(-0.6);

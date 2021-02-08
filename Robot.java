@@ -117,84 +117,95 @@ public class Robot extends TimedRobot {
     }
   }
 
-  public void forward (double distance)
+  public void forward (double inches)
   {
     double leadLeftOutput1 = leadLeftEncoder.getPosition();
-    double leadRightOutput1 = leadRightEncoder.getPosition();
+    double weightAdjust = 1.02;
+    double speed = 0.2;
+    double distance = 0.5 * inches;
 
     while(leadLeftEncoder.getPosition() < distance + leadLeftOutput1) 
     {
-      leadMotorLeft.set(0.2);
-      leadMotorRight.set(-0.2);
+      leadMotorLeft.set(speed);
+      leadMotorRight.set(-speed*weightAdjust);
     }
     leadMotorLeft.set(0.0);
     leadMotorRight.set(0.0);
   }
 
-  public void backward (double distance)
+  public void backward (double inches)
   {
     double leadLeftOutput1 = leadLeftEncoder.getPosition();
-    
+    double weightAdjust = 1.02;
+    double speed = 0.2;
+    double distance = 0.5 * inches;
+
     while(leadLeftEncoder.getPosition() > -distance + leadLeftOutput1) 
     {
-      leadMotorLeft.set(-0.2);
-      leadMotorRight.set(0.2);
+      leadMotorLeft.set(-speed);
+      leadMotorRight.set(speed*weightAdjust);
     }
     leadMotorLeft.set(0.0);
     leadMotorRight.set(0.0);
   }
 
   public void turnRight (double degrees) {
-    double distance = degrees * 10.7/90;
+    double distance = degrees * 10.69/90;
+    double weightAdjust = 1.0115;
+    double speed = 0.2;
 
     double leadLeftOutput1 = leadLeftEncoder.getPosition();
     
     while(leadLeftEncoder.getPosition() < distance + leadLeftOutput1) 
     {
-      leadMotorLeft.set(0.2);
-      leadMotorRight.set(0.2);
+      leadMotorLeft.set(speed);
+      leadMotorRight.set(speed*weightAdjust);
     }
     leadMotorLeft.set(0.0);
     leadMotorRight.set(0.0);
   }
 
   public void turnLeft (double degrees) {
-    double distance = degrees * 10.7/90;
-
+    double distance = degrees * 10.75/90;
+    double weightAdjust = 1.02;
+    double speed = 0.2;
     double leadLeftOutput1 = leadLeftEncoder.getPosition();
     
     while(leadLeftEncoder.getPosition() > -distance + leadLeftOutput1) 
     {
-      leadMotorLeft.set(-0.2);
-      leadMotorRight.set(-0.2);
+      leadMotorLeft.set(-speed);
+      leadMotorRight.set(-speed*weightAdjust);
     }
     leadMotorLeft.set(0.0);
     leadMotorRight.set(0.0);
   }
 
   public void brake () {
-    double leadLeftOutput1 = leadLeftEncoder.getPosition();
-    double leadRightOutput1 = leadRightEncoder.getPosition();
-    double watch = System.currentTimeMillis();
-    double deltaTime = 100;
-    while (System.currentTimeMillis() - watch <= deltaTime) {
-      leadMotorLeft.set(0.0);
-      leadMotorRight.set(0.0);
-    }
-    double leftDistChange = leadLeftEncoder.getPosition() - leadLeftOutput1;
-    double rightDistChange = leadRightEncoder.getPosition() - leadRightOutput1;
-    
-    System.out.println("timeChange: " + deltaTime);
-    System.out.println("leftDistChange: " + leftDistChange);
-    System.out.println("rightDistChange: " + rightDistChange);
 
-    //check the constant 1.0115
-    double weightAdjust = 1.0115;
-    double watch1 = System.currentTimeMillis();
-    while (System.currentTimeMillis() - watch1 <= 100) {
-      leadMotorLeft.set(-leftDistChange*50/deltaTime);
-      leadMotorRight.set(-rightDistChange*weightAdjust*50/deltaTime);
+    double leftVelocity = leadLeftEncoder.getVelocity()/2000;
+    double rightVelocity = leadRightEncoder.getVelocity()/2000;
+
+    SmartDashboard.putNumber("leftVelocity", leftVelocity);
+    SmartDashboard.putNumber("rightVelocity", rightVelocity);
+
+    double watch = System.currentTimeMillis();
+    double time = 150; //ms
+
+    if(rightVelocity > 0) {
+      while (leadRightEncoder.getVelocity()/2000 > 0.1 && System.currentTimeMillis() < watch + time) {
+        leadMotorLeft.set(-leftVelocity);
+        leadMotorRight.set(-rightVelocity);
+      }
     }
+    else {
+      while (leadRightEncoder.getVelocity()/2000 < 0.1 && System.currentTimeMillis() < watch + time) {
+        leadMotorLeft.set(-leftVelocity);
+        leadMotorRight.set(-rightVelocity);
+      }
+    }
+
+    
+
     leadMotorLeft.set(0.0);
     leadMotorRight.set(0.0);
   }
@@ -206,6 +217,12 @@ public class Robot extends TimedRobot {
       leadMotorLeft.set(0.0);
       leadMotorRight.set(0.0);
     }
+  }
+
+  public void shoot(double power)
+  {
+    shooter1.set(power);
+    shooter2.set(power);
   }
 
   public void DOTDOOTDOOT ()
@@ -297,17 +314,18 @@ public class Robot extends TimedRobot {
     System.out.println("Auto selected: " + m_autoSelected);
 
     //DOTDOOTDOOT();
-    //forward(10);
-    //brake();
-    //wait(300);
-    //backward(10);
-    //brake();
-    //wait(300);
-    turnRight(90);
+    forward(15);
+    brake();
+    /*wait(300);
+    backward(36);
+    brake();
+    wait(300);*/
+    /*turnRight(90);
     brake();
     wait(300);
     turnLeft(90);
     brake();
+    wait(300);*/
   }
 
   /**
@@ -411,8 +429,12 @@ public class Robot extends TimedRobot {
     //shooter remember to change back to 0.8
     if (xbox.getRawButtonPressed(6)) 
     {
-      shooter1.set(-1);
-      shooter2.set(-1);
+      //shooter1.set(-1);
+      //shooter2.set(-1);
+      shooter1.setVoltage(-12);
+      shooter2.setVoltage(-12);
+      SmartDashboard.putNumber("shooter1 voltage", shooter1.getBusVoltage());
+      SmartDashboard.putNumber("shooter2 voltage", shooter2.getBusVoltage());
     }
     else if (xbox.getRawButtonPressed(5))
     {

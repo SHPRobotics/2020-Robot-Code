@@ -52,7 +52,7 @@ public class Robot extends TimedRobot {
   CANEncoder leadLeftEncoder = new CANEncoder(leadMotorLeft);
   CANSparkMax followMotorLeft = new CANSparkMax(2, MotorType.kBrushless);
 
-  CANSparkMax shooter1 = new CANSparkMax(5, MotorType.kBrushed);
+  CANSparkMax shooter1 = new CANSparkMax(5, MotorType.kBrushless);
   CANSparkMax shooter2 = new CANSparkMax(6, MotorType.kBrushed);
   CANSparkMax hIntake = new CANSparkMax(8, MotorType.kBrushed);
   CANSparkMax vIntake = new CANSparkMax(9, MotorType.kBrushed);
@@ -317,7 +317,7 @@ public class Robot extends TimedRobot {
     followMotorRight.follow(leadMotorRight);
     followMotorLeft.follow(leadMotorLeft);
 
-    servo.setAngle(300);
+    //servo.setAngle(300);
 
     gyro.calibrate();
     SmartDashboard.putNumber("Done Calibrating:", 1);
@@ -433,6 +433,21 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
   }
 
+  public void align() {
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    table.getEntry("pipeline").setNumber(1);
+    double tx = table.getEntry("tx").getDouble(0.0);
+
+    double P = 0.1;
+
+    while(tx > 0.5 || tx < -0.5) {
+      leadMotorLeft.set(tx * P);
+      leadMotorRight.set(-tx * P);
+    }
+    brake();
+    table.getEntry("pipeline").setNumber(0);
+  }
+
   /**
    * This function is called periodically during operator control.
    */
@@ -445,7 +460,7 @@ public class Robot extends TimedRobot {
     double ta = table.getEntry("ta").getDouble(0.0);
     //double ts = table.getEntry("ts").getDouble(0.0);
     table.getEntry("camMode").setNumber(0);
-
+    table.getEntry("pipeline").setNumber(0);
     //System.out.print("tx: " + tx +"\r");
     //System.out.print("ty: " + ty +"\r");
     SmartDashboard.putNumber("tx", tx);
@@ -460,6 +475,11 @@ public class Robot extends TimedRobot {
     String routeChoice = chooseRoute(tx, distanceInInches);
 
     SmartDashboard.putString("Route Choice", routeChoice);
+
+    //align
+    if(rightJoy.getRawButtonPressed(3)) {
+      align();
+    }
 
     //Drive remember to change this back to 0.75
     if(rightJoy.getY() < -0.15 || rightJoy.getY() > 0.15)
@@ -479,7 +499,7 @@ public class Robot extends TimedRobot {
     {
       leadMotorLeft.set(0);
     }
-    double startPosition = 300;
+    double startPosition = 180;
     //H & V Intake && James is stupid and gaee && Square button is intake && X button is out
     if(xbox.getAButton()) //intake & hop in
     {

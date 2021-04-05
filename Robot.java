@@ -53,8 +53,7 @@ public class Robot extends TimedRobot {
   CANSparkMax followMotorLeft = new CANSparkMax(2, MotorType.kBrushless);
 
   CANSparkMax shooter1 = new CANSparkMax(5, MotorType.kBrushless);
-  CANSparkMax shooterEncoder = new CANEncoder(shooter1);
-  //CANSparkMax shooter2 = new CANSparkMax(6, MotorType.kBrushed);
+  CANSparkMax shooter2 = new CANSparkMax(6, MotorType.kBrushed);
   CANSparkMax hIntake = new CANSparkMax(8, MotorType.kBrushed);
   CANSparkMax vIntake = new CANSparkMax(9, MotorType.kBrushed);
   CANSparkMax hopper = new CANSparkMax(7, MotorType.kBrushed);
@@ -228,8 +227,8 @@ public class Robot extends TimedRobot {
 
       if (System.currentTimeMillis() - watch <= 2000)
       {
-        shooter1.set(1);
-        //shooter2.set(-1);
+        shooter1.set(-1);
+        shooter2.set(-1);
       }
       else if (2000 <= System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 8000)
       {
@@ -264,8 +263,8 @@ public class Robot extends TimedRobot {
 
       if (System.currentTimeMillis() - watch <= 3000)
       {
-        shooter1.set(1);
-        //shooter2.set(-1);
+        shooter1.set(-1);
+        shooter2.set(-1);
         
       }
       else if (3000 <= System.currentTimeMillis() - watch)
@@ -464,7 +463,6 @@ public class Robot extends TimedRobot {
     table.getEntry("pipeline").setNumber(0);
     //System.out.print("tx: " + tx +"\r");
     //System.out.print("ty: " + ty +"\r");
-    SmartDashboard.putNumber("flywheel velocity", shooterEncoder.getVelocity());
     SmartDashboard.putNumber("tx", tx);
     SmartDashboard.putNumber("ty", ty);
     SmartDashboard.putNumber("ta", ta);
@@ -493,7 +491,7 @@ public class Robot extends TimedRobot {
       leadMotorRight.set(0); 
     }
 
-    if(leftJoy.getY() < -0.15 || leftJoy.getY() > 0.15)
+    if(leftJoy.getY() < -0.15 || leftJoy.getY() > 0.15) 
     {
       leadMotorLeft.set(-0.75 * leftJoy.getY());
     }
@@ -555,10 +553,10 @@ public class Robot extends TimedRobot {
     //shooter remember to change back to 0.8
     if (xbox.getRawButtonPressed(6)) 
     {
-      shooter1.set(1);
+      //shooter1.set(-1);
       //shooter2.set(-1);
-      //shooter1.setVoltage(-12);
-      //shooter2.setVoltage(-12);
+      shooter1.setVoltage(-12);
+      shooter2.setVoltage(-12);
       SmartDashboard.putNumber("shooter1 voltage", shooter1.getBusVoltage());
       SmartDashboard.putNumber("shooter2 voltage", shooter2.getBusVoltage());
     }

@@ -53,6 +53,7 @@ public class Robot extends TimedRobot {
   CANSparkMax followMotorLeft = new CANSparkMax(2, MotorType.kBrushless);
 
   CANSparkMax shooter1 = new CANSparkMax(5, MotorType.kBrushless);
+  CANSparkMax shooterEncoder = new CANEncoder(shooter1);
   //CANSparkMax shooter2 = new CANSparkMax(6, MotorType.kBrushed);
   CANSparkMax hIntake = new CANSparkMax(8, MotorType.kBrushed);
   CANSparkMax vIntake = new CANSparkMax(9, MotorType.kBrushed);
@@ -463,6 +464,7 @@ public class Robot extends TimedRobot {
     table.getEntry("pipeline").setNumber(0);
     //System.out.print("tx: " + tx +"\r");
     //System.out.print("ty: " + ty +"\r");
+    SmartDashboard.putNumber("flywheel velocity", shooterEncoder.getVelocity());
     SmartDashboard.putNumber("tx", tx);
     SmartDashboard.putNumber("ty", ty);
     SmartDashboard.putNumber("ta", ta);

@@ -21,7 +21,9 @@ import edu.wpi.first.wpilibj.TimedRobot;
 //import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 import com.revrobotics.CANEncoder;
+import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -53,7 +55,9 @@ public class Robot extends TimedRobot {
   CANSparkMax followMotorLeft = new CANSparkMax(2, MotorType.kBrushless);
 
   CANSparkMax shooter1 = new CANSparkMax(5, MotorType.kBrushless);
-  CANSparkMax shooter2 = new CANSparkMax(6, MotorType.kBrushed);
+  CANEncoder shooterEncoder = new CANEncoder(shooter1);
+  CANPIDController pidController = new CANPIDController(shooter1); 
+  //CANSparkMax shooter2 = new CANSparkMax(6, MotorType.kBrushed);
   CANSparkMax hIntake = new CANSparkMax(8, MotorType.kBrushed);
   CANSparkMax vIntake = new CANSparkMax(9, MotorType.kBrushed);
   CANSparkMax hopper = new CANSparkMax(7, MotorType.kBrushed);
@@ -199,7 +203,7 @@ public class Robot extends TimedRobot {
       }
       else if (xbox.getRawButtonPressed(5)) {
         shooter1.set(0);
-        shooter2.set(0);
+        //shooter2.set(0);
         break;
       }
       else {
@@ -227,8 +231,8 @@ public class Robot extends TimedRobot {
 
       if (System.currentTimeMillis() - watch <= 2000)
       {
-        shooter1.set(-1);
-        shooter2.set(-1);
+        shooter1.set(-0.8);
+        //shooter2.set(-0.8);
       }
       else if (2000 <= System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 8000)
       {
@@ -237,7 +241,7 @@ public class Robot extends TimedRobot {
       else if (8000 <= System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 9000)
       {
         shooter1.set(0);
-        shooter2.set(0);
+        //shooter2.set(0);
       }
     }
   }
@@ -263,8 +267,8 @@ public class Robot extends TimedRobot {
 
       if (System.currentTimeMillis() - watch <= 3000)
       {
-        shooter1.set(-1);
-        shooter2.set(-1);
+        shooter1.set(-0.8);
+        //shooter2.set(-0.8);
         
       }
       else if (3000 <= System.currentTimeMillis() - watch)
@@ -274,7 +278,7 @@ public class Robot extends TimedRobot {
 
       if(xbox.getRawButtonPressed(5)) {
         shooter1.set(0);
-        shooter2.set(0);
+        //shooter2.set(0);
         break;
       }
     }
@@ -309,7 +313,7 @@ public class Robot extends TimedRobot {
     leadMotorLeft.restoreFactoryDefaults();
     followMotorLeft.restoreFactoryDefaults();
     shooter1.restoreFactoryDefaults();
-    shooter2.restoreFactoryDefaults();
+    //shooter2.restoreFactoryDefaults();
     hIntake.restoreFactoryDefaults();
     vIntake.restoreFactoryDefaults();
     hopper.restoreFactoryDefaults();
@@ -317,6 +321,20 @@ public class Robot extends TimedRobot {
     followMotorRight.follow(leadMotorRight);
     followMotorLeft.follow(leadMotorLeft);
 
+    double kP = 6e-5;
+    double kI = 0;
+    double kD = 0;
+    double kIz = 0;
+    double kFF = 0.000015;
+    double kMaxOutput = 1;
+    double kMinOutput = -1;
+    
+    pidController.setP(kP);
+    pidController.setI(kI);
+    pidController.setD(kD);
+    pidController.setIZone(kIz);
+    pidController.setFF(kFF);
+    pidController.setOutputRange(kMinOutput, kMaxOutput);
     //servo.setAngle(300);
 
     gyro.calibrate();
@@ -467,6 +485,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("ty", ty);
     SmartDashboard.putNumber("ta", ta);
     SmartDashboard.putNumber("Rotation", gyro.getAngle());
+    SmartDashboard.putNumber("Shooter Velocity", shooterEncoder.getVelocity());
     //SmartDashboard.putNumber("ts", ts);
 
     double distanceInInches = 53.294 * Math.pow(ta, -0.459) + 3;
@@ -540,7 +559,7 @@ public class Robot extends TimedRobot {
     {
       IntakeDOOTDOOT();
       shooter1.set(0);
-      shooter2.set(0);
+      //shooter2.set(0);
     }
     else
     {
@@ -553,17 +572,18 @@ public class Robot extends TimedRobot {
     //shooter remember to change back to 0.8
     if (xbox.getRawButtonPressed(6)) 
     {
-      //shooter1.set(-1);
-      //shooter2.set(-1);
-      shooter1.setVoltage(-12);
-      shooter2.setVoltage(-12);
-      SmartDashboard.putNumber("shooter1 voltage", shooter1.getBusVoltage());
-      SmartDashboard.putNumber("shooter2 voltage", shooter2.getBusVoltage());
+      pidController.setReference(14000, ControlType.kVelocity);
+      //shooter1.set(0.9);
+      //shooter2.set(0.9);
+      //shooter1.setVoltage(-12);
+      //shooter2.setVoltage(-12);
+      //SmartDashboard.putNumber("shooter1 voltage", shooter1.getBusVoltage());
+      //SmartDashboard.putNumber("shooter2 voltage", shooter2.getBusVoltage());
     }
     else if (xbox.getRawButtonPressed(5))
     {
       shooter1.set(0.0);
-      shooter2.set(0.0);
+      //shooter2.set(0.0);
     }
     //vision.checkTarget();
     //vision.setCamera(1);

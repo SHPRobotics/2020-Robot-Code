@@ -82,18 +82,369 @@ public class Robot extends TimedRobot {
     followMotorLeft.follow(leadMotorLeft);
   }
 
-  public void forward (float distance)
+    public void forward (double inches)
   {
-    double leadLeftOutput = leadLeftEncoder.getPosition();
-    
-    while(leadLeftEncoder.getPosition() < distance + leadLeftOutput) 
+    double leadLeftOutput1 = leadLeftEncoder.getPosition();
+    double weightAdjust = 1.02;
+    double speed = 0.2;
+    double distance = 0.5 * inches;
+
+    while(leadLeftEncoder.getPosition() < distance + leadLeftOutput1) 
     {
-      leadMotorLeft.set(0.2);
-      leadMotorRight.set(-0.2);
+      leadMotorLeft.set(speed);
+      leadMotorRight.set(-speed*weightAdjust);
+    }
+    leadMotorLeft.set(0.0);
+    leadMotorRight.set(0.0);
+    brake();
+    wait(100);
+  }
+
+  public void smartForward(double distanceProportion, int pipelineNumber)
+  {
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    table.getEntry("pipeline").setNumber(pipelineNumber);
+
+    double ta = table.getEntry("ta").getDouble(0.0);
+    //SmartDashboard.putNumber("ta", ta);
+    double distanceInInches = 53.294 * Math.pow(ta, -0.459) + 3;
+
+    forward(distanceInInches * distanceProportion);
+  }
+
+  public void backward (double inches)
+  {
+    double leadLeftOutput1 = leadLeftEncoder.getPosition();
+    double weightAdjust = 1.02;
+    double speed = 0.2;
+    double distance = 0.5 * inches;
+
+    while(leadLeftEncoder.getPosition() > -distance + leadLeftOutput1) 
+    {
+      leadMotorLeft.set(-speed);
+      leadMotorRight.set(speed*weightAdjust);
+    }
+    leadMotorLeft.set(0.0);
+    leadMotorRight.set(0.0);
+    brake();
+    wait(100);
+  }
+
+  public void turnRight (double degrees) {
+    double distance = degrees * 10.69/90;
+    double weightAdjust = 1.0115;
+    double speed = 0.2;
+
+    double leadLeftOutput1 = leadLeftEncoder.getPosition();
+    
+    while(leadLeftEncoder.getPosition() < distance + leadLeftOutput1) 
+    {
+      leadMotorLeft.set(speed);
+      leadMotorRight.set(speed*weightAdjust);
+    }
+    leadMotorLeft.set(0.0);
+    leadMotorRight.set(0.0);
+    brake();
+    wait(100);
+  }
+
+  public boolean searchRight (double degrees, int pipelineNumber) {
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    table.getEntry("pipeline").setNumber(pipelineNumber);
+
+    double distance = degrees * 10.69/90;
+    double weightAdjust = 1.0115;
+    double speed = 0.1;
+
+    double leadLeftOutput1 = leadLeftEncoder.getPosition();
+    
+    while(leadLeftEncoder.getPosition() < distance + leadLeftOutput1) 
+    {
+      leadMotorLeft.set(speed);
+      leadMotorRight.set(speed*weightAdjust);
+      if(table.getEntry("tv").getDouble(0.0) == 1) {
+        return true;
+      }
+    }
+    
+    leadMotorLeft.set(0.0);
+    leadMotorRight.set(0.0);
+    table.getEntry("pipeline").setNumber(0);
+    return false;
+  }
+
+  public void turnLeft (double degrees) {
+    double distance = degrees * 10.75/90;
+    double weightAdjust = 1.02;
+    double speed = 0.2;
+    double leadLeftOutput1 = leadLeftEncoder.getPosition();
+    
+    while(leadLeftEncoder.getPosition() > -distance + leadLeftOutput1) 
+    {
+      leadMotorLeft.set(-speed);
+      leadMotorRight.set(-speed*weightAdjust);
+    }
+    leadMotorLeft.set(0.0);
+    leadMotorRight.set(0.0);
+    brake();
+    wait(100);
+  }
+
+  public boolean searchLeft (double degrees, int pipelineNumber) {
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    table.getEntry("pipeline").setNumber(pipelineNumber);
+
+    double distance = degrees * 10.69/90;
+    double weightAdjust = 1.0115;
+    double speed = 0.1;
+
+    double leadLeftOutput1 = leadLeftEncoder.getPosition();
+    
+    while(leadLeftEncoder.getPosition() < distance + leadLeftOutput1) 
+    {
+      leadMotorLeft.set(-speed);
+      leadMotorRight.set(-speed*weightAdjust);
+      if(table.getEntry("tv").getDouble(0.0) == 1) {
+        return true;
+      }
+    }
+    
+    leadMotorLeft.set(0.0);
+    leadMotorRight.set(0.0);
+    table.getEntry("pipeline").setNumber(0);
+    return false;
+  }
+
+  public void brake () {
+
+    double leftVelocity = leadLeftEncoder.getVelocity()/2000;
+    double rightVelocity = leadRightEncoder.getVelocity()/2000;
+
+    SmartDashboard.putNumber("leftVelocity", leftVelocity);
+    SmartDashboard.putNumber("rightVelocity", rightVelocity);
+
+    double watch = System.currentTimeMillis();
+    double time = 150; //ms
+
+    if(rightVelocity > 0) {
+      while (leadRightEncoder.getVelocity()/2000 > 0.1 && System.currentTimeMillis() < watch + time) {
+        leadMotorLeft.set(-leftVelocity);
+        leadMotorRight.set(-rightVelocity);
+      }
+    }
+    else {
+      while (leadRightEncoder.getVelocity()/2000 < 0.1 && System.currentTimeMillis() < watch + time) {
+        leadMotorLeft.set(-leftVelocity);
+        leadMotorRight.set(-rightVelocity);
+      }
     }
 
     leadMotorLeft.set(0.0);
     leadMotorRight.set(0.0);
+  }
+
+  public void wait (int milliseconds) {
+    double watch = System.currentTimeMillis();
+
+    while (System.currentTimeMillis() - watch <= milliseconds) {
+      leadMotorLeft.set(0.0);
+      leadMotorRight.set(0.0);
+    }
+  }
+
+  
+  public void align(int pipelineNumber) {
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    table.getEntry("pipeline").setNumber(pipelineNumber);
+    double tx = table.getEntry("tx").getDouble(0.0);
+
+    double P = 0.01;
+
+    while(tx > 0.5 || tx < -0.5) {
+      leadMotorLeft.set(tx * P);
+      leadMotorRight.set(tx * P);
+    }
+    brake();
+    table.getEntry("pipeline").setNumber(0);
+    wait(100);
+  }
+
+  public void search(int pipelineNumber) {
+    
+    int searchRadius = 90;
+    boolean foundOnLeft = searchLeft(searchRadius, pipelineNumber);
+    brake();
+    if(!foundOnLeft) {
+      turnRight(searchRadius);
+      boolean foundOnRight = searchRight(searchRadius, pipelineNumber);
+      brake();
+    }
+  }
+
+  @Override
+  public void robotInit() {
+    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+    m_chooser.addOption("My Auto", kCustomAuto);
+    SmartDashboard.putData("Auto choices", m_chooser);
+      
+    driveCamera = CameraServer.getInstance().startAutomaticCapture();
+    driveCamera.setResolution(640, 480);
+
+    leadMotorRight.restoreFactoryDefaults();
+    followMotorRight.restoreFactoryDefaults();
+    leadMotorLeft.restoreFactoryDefaults();
+    followMotorLeft.restoreFactoryDefaults();
+    shooter1.restoreFactoryDefaults();
+    //shooter2.restoreFactoryDefaults();
+    hIntake.restoreFactoryDefaults();
+    vIntake.restoreFactoryDefaults();
+    hopper.restoreFactoryDefaults();
+
+    followMotorRight.follow(leadMotorRight);
+    followMotorLeft.follow(leadMotorLeft);
+
+    double kP = 6e-5;
+    double kI = 0;
+    double kD = 0;
+    double kIz = 0;
+    double kFF = 0.000015;
+    double kMaxOutput = 1;
+    double kMinOutput = -1;
+    
+    pidController.setP(kP);
+    pidController.setI(kI);
+    pidController.setD(kD);
+    pidController.setIZone(kIz);
+    pidController.setFF(kFF);
+    pidController.setOutputRange(kMinOutput, kMaxOutput);
+    //servo.setAngle(300);
+
+    gyro.calibrate();
+    SmartDashboard.putNumber("Done Calibrating:", 1);
+    gyro.reset();
+    //table.getEntry("camMode").setNumber(0);
+  }
+
+  public void GalacticSearch() {
+    align(1);
+    smartForward(0.5, 1);
+    wait(300);
+    align(1);
+    hIntake.set(-0.6);
+    vIntake.set(1);
+    hopper.set(0.1);
+    smartForward(1, 1);
+    wait(300);
+    hIntake.set(0);
+    vIntake.set(0);
+    hopper.set(0);
+    for(int i = 0; i < 4; i++) {
+      search(1);
+      align(1);
+      smartForward(0.5, 1);
+      align(1);
+      hIntake.set(-0.6);
+      vIntake.set(1);
+      hopper.set(0.1);
+      smartForward(1, 1);
+      wait(300);
+      hIntake.set(0);
+      vIntake.set(0);
+      hopper.set(0);
+    }
+  }
+
+  public void BarrelRace () {
+    //first circle
+    forward(130);
+    turnRight(90);
+    forward(70);
+    turnRight(90);
+    forward(70);
+    turnRight(90);
+    forward(70);
+    turnRight(90);
+    forward(70);
+
+    //second circle
+    turnRight(10);
+    forward(195);
+    turnLeft(90);
+    forward(70);
+    turnLeft(90);
+    forward(70);
+    turnLeft(90);
+    forward(70);
+
+    //third circle
+    turnLeft(30);
+    forward(130);
+    turnLeft(90);
+    forward(70);
+    turnLeft(90);
+    forward(70);
+    turnLeft(30);
+    forward(200);
+  }
+
+  public void SlalomPath() {
+    //First stage
+    forward(60);
+    turnLeft(60);
+    forward(100);
+    turnRight(60);
+    forward(100);
+    turnRight(60);
+    forward(100);
+    turnLeft(60);
+    forward(50);
+    turnLeft(90);
+    forward(50);
+    turnLeft(90);
+
+    //Second stage
+    forward(50);
+    turnLeft(60);
+    forward(100);
+    turnRight(60);
+    forward(100);
+    turnRight(60);
+    forward(100);
+    turnLeft(60);
+    forward(50);
+  }
+
+  public void BouncePath () {
+    //first bounce
+    forward(60);
+    turnLeft(90);
+    forward(60);
+    turnLeft(180);
+    forward(60);
+
+    //turnaround
+    turnLeft(30);
+    forward(100);
+    turnLeft(100);
+    forward(60);
+
+    //second bounce
+    turnLeft(60);
+    forward(100);
+    turnRight(180);
+    forward(120);
+
+    //second turnaround
+    turnLeft(90);
+    forward(80);
+    turnLeft(90);
+    forward(120);
+
+    //third bounce
+    turnRight(180);
+    forward(60);
+    turnLeft(90);
+    forward(50);
   }
 
   /**

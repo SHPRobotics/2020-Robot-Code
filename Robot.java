@@ -12,16 +12,25 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.TimedRobot;
 
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+//import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 import com.revrobotics.CANEncoder;
+import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.XboxController;
 
 
@@ -45,44 +54,32 @@ public class Robot extends TimedRobot {
   CANEncoder leadLeftEncoder = new CANEncoder(leadMotorLeft);
   CANSparkMax followMotorLeft = new CANSparkMax(2, MotorType.kBrushless);
 
-  CANSparkMax shooter1 = new CANSparkMax(5, MotorType.kBrushed);
-  CANSparkMax shooter2 = new CANSparkMax(6, MotorType.kBrushed);
+  CANSparkMax shooter1 = new CANSparkMax(5, MotorType.kBrushless);
+  CANEncoder shooterEncoder = new CANEncoder(shooter1);
+  CANPIDController pidController = new CANPIDController(shooter1); 
+  //CANSparkMax shooter2 = new CANSparkMax(6, MotorType.kBrushed);
   CANSparkMax hIntake = new CANSparkMax(8, MotorType.kBrushed);
   CANSparkMax vIntake = new CANSparkMax(9, MotorType.kBrushed);
   CANSparkMax hopper = new CANSparkMax(7, MotorType.kBrushed);
+
+  Servo servo = new Servo(0);
+  ADXRS450_Gyro gyro = new ADXRS450_Gyro();
 
   Joystick leftJoy = new Joystick(0);
   Joystick rightJoy = new Joystick(1);
   XboxController xbox = new XboxController(2);
 
-  DifferentialDrive diffDrive = new DifferentialDrive(leadMotorLeft, leadMotorRight);
+  UsbCamera driveCamera;
 
-  Limelight vision = new Limelight(rightJoy, diffDrive);
+  //DifferentialDrive diffDrive = new DifferentialDrive(leadMotorLeft, leadMotorRight);
+  //NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+  //Limelight vision = new Limelight(rightJoy, diffDrive);
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
    */
-  @Override
-  public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
-
-    leadMotorRight.restoreFactoryDefaults();
-    followMotorRight.restoreFactoryDefaults();
-    leadMotorLeft.restoreFactoryDefaults();
-    followMotorLeft.restoreFactoryDefaults();
-    shooter1.restoreFactoryDefaults();
-    shooter2.restoreFactoryDefaults();
-    hIntake.restoreFactoryDefaults();
-    vIntake.restoreFactoryDefaults();
-    hopper.restoreFactoryDefaults();
-
-    followMotorRight.follow(leadMotorRight);
-    followMotorLeft.follow(leadMotorLeft);
-  }
-
-    public void forward (double inches)
+  
+  public void forward (double inches)
   {
     double leadLeftOutput1 = leadLeftEncoder.getPosition();
     double weightAdjust = 1.02;
@@ -458,7 +455,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-
+    //System.out.print(System.currentTimeMillis());
   }
 
   /**
@@ -479,7 +476,24 @@ public class Robot extends TimedRobot {
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
 
-    forward(2);
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    
+    double tx = table.getEntry("tx").getDouble(0.0);
+    double ty = table.getEntry("ty").getDouble(0.0);
+    double ta = table.getEntry("ta").getDouble(0.0);
+    //double ts = table.getEntry("ts").getDouble(0.0);
+    table.getEntry("camMode").setNumber(0);
+
+    //System.out.print("tx: " + tx +"\r");
+    //System.out.print("ty: " + ty +"\r");
+    SmartDashboard.putNumber("tx", tx);
+    SmartDashboard.putNumber("ty", ty);
+    SmartDashboard.putNumber("ta", ta);
+    //SmartDashboard.putNumber("ts", ts);
+
+    //double distanceInInches = 53.294 * Math.pow(ta, -0.459) + 3;
+
+    //SmartDashboard.putNumber("distanceInInches", distanceInInches);
   }
 
   /**
@@ -487,6 +501,29 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
+    
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    
+    double tx = table.getEntry("tx").getDouble(0.0);
+    double ty = table.getEntry("ty").getDouble(0.0);
+    double ta = table.getEntry("ta").getDouble(0.0);
+    //double ts = table.getEntry("ts").getDouble(0.0);
+    table.getEntry("camMode").setNumber(0);
+
+    //System.out.print("tx: " + tx +"\r");
+    //System.out.print("ty: " + ty +"\r");
+    SmartDashboard.putNumber("tx", tx);
+    SmartDashboard.putNumber("ty", ty);
+    SmartDashboard.putNumber("ta", ta);
+    //SmartDashboard.putNumber("Rotation", gyro.getAngle());
+    //SmartDashboard.putNumber("ts", ts);
+
+    double distanceInInches = 53.294 * Math.pow(ta, -0.459) + 3;
+
+    SmartDashboard.putNumber("distanceInInches", distanceInInches);
+
+    GalacticSearch();
+
     switch (m_autoSelected) {
     case kCustomAuto:
       // Put custom auto code here   
@@ -510,7 +547,35 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     
-    //Drive
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    double tx = table.getEntry("tx").getDouble(0.0);
+    double ty = table.getEntry("ty").getDouble(0.0);
+    double ta = table.getEntry("ta").getDouble(0.0);
+    //double ts = table.getEntry("ts").getDouble(0.0);
+    table.getEntry("camMode").setNumber(0);
+    table.getEntry("pipeline").setNumber(0);
+    //System.out.print("tx: " + tx +"\r");
+    //System.out.print("ty: " + ty +"\r");
+    SmartDashboard.putNumber("tx", tx);
+    SmartDashboard.putNumber("ty", ty);
+    SmartDashboard.putNumber("ta", ta);
+    SmartDashboard.putNumber("Rotation", gyro.getAngle());
+    SmartDashboard.putNumber("Shooter Velocity", shooterEncoder.getVelocity());
+    //SmartDashboard.putNumber("ts", ts);
+
+    double distanceInInches = 53.294 * Math.pow(ta, -0.459) + 3;
+    SmartDashboard.putNumber("distanceInInches", distanceInInches);
+
+    String routeChoice = chooseRoute(tx, distanceInInches);
+
+    SmartDashboard.putString("Route Choice", routeChoice);
+
+    //align
+    if(rightJoy.getRawButtonPressed(3)) {
+      align();
+    }
+
+    //Drive remember to change this back to 0.75
     if(rightJoy.getY() < -0.15 || rightJoy.getY() > 0.15)
     {
       leadMotorRight.set(0.75 * rightJoy.getY());
@@ -520,7 +585,7 @@ public class Robot extends TimedRobot {
       leadMotorRight.set(0); 
     }
 
-    if(leftJoy.getY() < -0.15 || leftJoy.getY() > 0.15)
+    if(leftJoy.getY() < -0.15 || leftJoy.getY() > 0.15) 
     {
       leadMotorLeft.set(-0.75 * leftJoy.getY());
     }
@@ -528,92 +593,75 @@ public class Robot extends TimedRobot {
     {
       leadMotorLeft.set(0);
     }
-    
-    //H & V Intake && James is stupid && Square button is intake && X button is out
-    if(xbox.getAButton()) 
+    double startPosition = 180;
+    //H & V Intake && James is stupid and gaee && Square button is intake && X button is out
+    if(xbox.getAButton()) //intake & hop in
     {
       hIntake.set(-0.6);
       vIntake.set(1);
-      hopper.set(0.3);
-    } 
-    else if (xbox.getBButton())
+      hopper.set(0.1);
+    }
+    else if (xbox.getBButton()) //intake out
     {
       hIntake.set(0.6);
       vIntake.set(-1);
     }
-    else if(xbox.getRawButtonPressed(3)) //circle & hopin
+    /*else if (xbox.getRawButtonPressed(3)) //squre and hopin
     {
       double startTime = System.currentTimeMillis(); 
-      
+   
       while (System.currentTimeMillis() - startTime < 150)
       {       
         hopper.set(0.3);
       }
-    }
-    else if(xbox.getRawButtonPressed(7))
-    {
-      double watch = System.currentTimeMillis();
-    
-      while (System.currentTimeMillis() - watch <= 900)
-      {
-        if (System.currentTimeMillis() - watch <= 150)
-        {
-          hopper.set(-0.3);
-        }
-        else if (150 < System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 300)
-        {
-          hopper.set(0);
-        }
-        else if (300 < System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 450)
-        {
-          hopper.set(-0.3);
-        }
-        else if (450 < System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 600)
-        {
-          hopper.set(0);
-        }
-        else if (600 < System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 750)
-        {
-          hopper.set(-0.3);
-        }
-        else if (750 < System.currentTimeMillis() - watch && System.currentTimeMillis() - watch <= 900)
-        {
-          hopper.set(0);
-        }
-      }
-    }
+    }*/
     else if (xbox.getRawButtonPressed(4)) //triangle & hopout
     {
       double startTime = System.currentTimeMillis(); 
       
-      while (System.currentTimeMillis() - startTime < 150)
-      {       
-        hopper.set(-0.3);
+      servo.setAngle(5);
+      while(System.currentTimeMillis() - startTime < 350) {
+        if(System.currentTimeMillis() - startTime < 250 && System.currentTimeMillis() - startTime > 100) {
+          hopper.set(-0.3);
+        }
+        else if(System.currentTimeMillis() - startTime > 250) {
+          hopper.set(0);
+        }
       }
+      servo.setAngle(startPosition);
+    }
+    else if (xbox.getRawButtonPressed(8))
+    {
+      IntakeDOOTDOOT();
+      shooter1.set(0);
+      //shooter2.set(0);
     }
     else
     {
       hIntake.set(0.0);
       vIntake.set(0.0);
       hopper.set(0);
+      servo.setAngle(startPosition);
     }
 
-    //Shooter
+    //shooter remember to change back to 0.8
     if (xbox.getRawButtonPressed(6)) 
     {
-      shooter1.set(-0.8);
-      shooter2.set(-0.8);
-    } 
+      pidController.setReference(14000, ControlType.kVelocity);
+      //shooter1.set(0.9);
+      //shooter2.set(0.9);
+      //shooter1.setVoltage(-12);
+      //shooter2.setVoltage(-12);
+      //SmartDashboard.putNumber("shooter1 voltage", shooter1.getBusVoltage());
+      //SmartDashboard.putNumber("shooter2 voltage", shooter2.getBusVoltage());
+    }
     else if (xbox.getRawButtonPressed(5))
     {
-      shooter1.set(0.0);
-      shooter2.set(0.0);
+      pidController.setReference(0, ControlType.kVelocity);
+      //shooter2.set(0.0);
     }
-
-
-
     //vision.checkTarget();
-    vision.setCamera(1);
+    //vision.setCamera(1);
   }
 
   /**
